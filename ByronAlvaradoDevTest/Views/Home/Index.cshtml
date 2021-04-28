@@ -1,0 +1,127 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+<div class="row">
+    <h1>TOP 10 COVIID CASES</h1>
+</div>
+<div class="row">
+    <div class="col-md-2">
+        <select class="form-control" id="dFilter">
+            
+        </select>
+    </div>
+    <div class="col-md-2">
+        <button class="btn btn-primary" type="button" id="btnReport">
+            Report
+        </button>
+    </div>
+    <div class="col-md-2">
+
+    </div>
+    <div class="col-md-2">
+        <button class="btn btn-default" type="button" id="btnXML">
+            XML
+        </button>
+    </div>
+    <div class="col-md-2">
+        <button class="btn btn-default" type="button" id="btnJSON">
+            JSON
+        </button>
+    </div>
+    <div class="col-md-2">
+        <button class="btn btn-default" type="button" id="btnCSV">
+            CSV
+        </button>
+    </div>
+
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <table class="table table-responsive table-striped table-bordered" id="tData">
+            <thead>
+                <tr>
+                    <th id="TableTitle">Region</th>
+                    <th>Provinces</th>
+                    <th>Cases</th>
+                    <th>Deaths</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function(){
+        $.ajax({
+            type: "GET",
+            url: "/Home/GetRegions",
+            contentType: "application/json",
+            dataType: "json",
+            success: function (data) {
+                $("#dFilter").empty();
+                $("#dFilter").append($("<option> </option > ").val("").html('Regions'));
+                $.each(data, function () {
+                    $("#dFilter").append($("<option> </option > ").val(this['Iso']).html(this['Name']));
+                });
+            }
+        });
+        window.table = $('#tData').DataTable({
+            ajax: {
+                url: '@Url.Action("GetReports", "Home")' ,
+                dataSrc: ""
+            },
+            order: [[ 2, "desc" ]],
+            columns: [
+                { data: 'Region.Name' },
+                { data: 'Region.Province' },
+                { data: 'Confirmed' },
+                { data: 'Deaths' }
+            ]
+        });
+
+        window.table.column(1).visible(false);
+
+    });
+
+    $("#btnReport").on("click", function () {
+        window.table.ajax.url('@Url.Action("GetReports", "Home")' + "?pRegion=" + $("#dFilter").val()).load();
+        window.table.ajax.reload();
+        if ($("#dFilter").text() != "Regions") {
+            window.table.column(1).visible(true);
+            window.table.column(0).visible(false);
+        }
+        else {
+            window.table.column(1).visible(false);
+            window.table.column(0).visible(true);
+        }
+
+    });
+    $("#btnJSON").on("click", function () {
+        var link = document.createElement('a');
+                document.body.appendChild(link);
+                link.href = '@Url.Action("ToJson", "Home")' + "?pRegion=" + $("#dFilter").val();
+                link.target = '_blank';
+                link.click();
+
+    });
+    $("#btnCSV").on("click", function () {
+        var link = document.createElement('a');
+                document.body.appendChild(link);
+                link.href = '@Url.Action("ToCSV", "Home")' + "?pRegion=" + $("#dFilter").val();
+                link.target = '_blank';
+                link.click();
+
+    });
+    $("#btnXML").on("click", function () {
+        var link = document.createElement('a');
+                document.body.appendChild(link);
+                link.href = '@Url.Action("ToXML", "Home")' + "?pRegion=" + $("#dFilter").val();
+                link.target = '_blank';
+                link.click();
+
+    });
+
+</script>
